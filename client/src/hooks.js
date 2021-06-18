@@ -1,28 +1,18 @@
-import { initializeSession } from 'svelte-kit-cookie-session';
+import { handleSession } from 'svelte-kit-cookie-session';
 
-export const getSession = async ({ locals }) => {
+/** @type {import('@sveltejs/kit').GetSession} */
+export async function getSession({ locals }) {
   return locals.session.data;
-};
+}
 
-export const handle = async ({ request, render }) => {
-  const session = initializeSession(request.headers, {
-    secret: import.meta.env.VITE_SECRET_KEY,
-    cookie: { path: '/' }
-  });
+export const handle = handleSession(
+  {
+    secret: import.meta.env.VITE_SECRET_KEY
+  },
+  ({ request, resolve }) => {
+    // request.locals is populated with the session `request.locals.session`
 
-  request.locals.session = session;
-
-  const response = await render(request);
-
-  if (!session['set-cookie']) {
-    return response;
+    // Do anything you want here
+    return resolve(request);
   }
-
-  return {
-    ...response,
-    headers: {
-      ...response.headers,
-      ...session
-    }
-  };
-};
+);
